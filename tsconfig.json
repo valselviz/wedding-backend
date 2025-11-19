@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+
+    // ESM mode
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    // Output directory
+    "outDir": "dist",
+
+    // Build settings
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  },
+
+  // Required by ts-node for ESM
+  "ts-node": {
+    "esm": true
+  }
+}
