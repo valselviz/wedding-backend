@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model guest_group_members {
+  id           Int           @id @default(autoincrement())
+  guest_id     Int?
+  group_id     Int?
+  guest_groups guest_groups? @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  guests       guests?       @relation(fields: [guest_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model guest_groups {
+  id                  Int                   @id @default(autoincrement())
+  name                String                @db.VarChar(100)
+  category            String?               @db.VarChar(50)
+  guest_group_members guest_group_members[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model guests {
+  id                  Int                   @id @default(autoincrement())
+  full_name           String                @db.VarChar(100)
+  guest_type          String                @db.VarChar(20)
+  main_guest_id       Int?
+  side                String?               @db.VarChar(10)
+  age_range           String?               @default("ADULT") @db.VarChar(10)
+  notes               String?
+  guest_group_members guest_group_members[]
+  guests              guests?               @relation("guestsToguests", fields: [main_guest_id], references: [id], onUpdate: NoAction)
+  other_guests        guests[]              @relation("guestsToguests")
+  table_assignments   table_assignments[]
+}
+
+model table_assignments {
+  id          Int     @id @default(autoincrement())
+  table_id    Int?
+  guest_id    Int?
+  seat_number Int?
+  guests      guests? @relation(fields: [guest_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tables      tables? @relation(fields: [table_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model tables {
+  id                Int                 @id @default(autoincrement())
+  name              String              @db.VarChar(50)
+  shape             String?             @db.VarChar(20)
+  seats             Int?
+  category          String?             @db.VarChar(50)
+  table_assignments table_assignments[]
+}
