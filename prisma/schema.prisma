@@ -7,51 +7,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model guest_group_members {
-  id           Int           @id @default(autoincrement())
-  guest_id     Int?
-  group_id     Int?
-  guest_groups guest_groups? @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  guests       guests?       @relation(fields: [guest_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model Guest {
+  id                Int                @id @default(autoincrement())
+  full_name         String             @db.VarChar(100)
+  guest_type        GuestType
+  main_guest_id     Int?
+  main_guest        Guest?             @relation("MainGuest", fields: [main_guest_id], references: [id], onUpdate: NoAction)
+  side              Side?
+  age_range         AgeRange           @default(ADULT)
+  notes             String?
+  status            Status             @default(INVITED)
+  table_assignments TableAssignment[]
+  group_members     GuestGroupMember[]
+  other_guests      Guest[]            @relation("MainGuest")
 }
 
-model guest_groups {
-  id                  Int                   @id @default(autoincrement())
-  name                String                @db.VarChar(100)
-  category            String?               @db.VarChar(50)
-  guest_group_members guest_group_members[]
+model GuestGroup {
+  id        Int                @id @default(autoincrement())
+  name      String             @db.VarChar(100)
+  category  String?            @db.VarChar(50)
+  members   GuestGroupMember[]
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model guests {
-  id                  Int                   @id @default(autoincrement())
-  full_name           String                @db.VarChar(100)
-  guest_type          String                @db.VarChar(20)
-  main_guest_id       Int?
-  side                String?               @db.VarChar(10)
-  age_range           String?               @default("ADULT") @db.VarChar(10)
-  notes               String?
-  guest_group_members guest_group_members[]
-  guests              guests?               @relation("guestsToguests", fields: [main_guest_id], references: [id], onUpdate: NoAction)
-  other_guests        guests[]              @relation("guestsToguests")
-  table_assignments   table_assignments[]
+model GuestGroupMember {
+  id       Int        @id @default(autoincrement())
+  guest    Guest      @relation(fields: [guest_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  guest_id Int
+  group    GuestGroup @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  group_id Int
 }
 
-model table_assignments {
-  id          Int     @id @default(autoincrement())
-  table_id    Int?
-  guest_id    Int?
+model Table {
+  id          Int               @id @default(autoincrement())
+  name        String            @db.VarChar(50)
+  shape       Shape?
+  seats       Int
+  category    String?           @db.VarChar(50)
+  assignments TableAssignment[]
+}
+
+model TableAssignment {
+  id          Int   @id @default(autoincrement())
+  table       Table @relation(fields: [table_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  table_id    Int
+  guest       Guest @relation(fields: [guest_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  guest_id    Int
   seat_number Int?
-  guests      guests? @relation(fields: [guest_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  tables      tables? @relation(fields: [table_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model tables {
-  id                Int                 @id @default(autoincrement())
-  name              String              @db.VarChar(50)
-  shape             String?             @db.VarChar(20)
-  seats             Int?
-  category          String?             @db.VarChar(50)
-  table_assignments table_assignments[]
+enum GuestType {
+  MAIN_GUEST
+  PLUS_ONE
+  BRIDE
+  GROOM
+}
+
+enum Side {
+  BRIDE
+  GROOM
+}
+
+enum AgeRange {
+  ADULT
+  CHILD
+  BABY
+}
+
+enum Status {
+  INVITED
+  CONFIRMED
+  DECLINED
+}
+
+enum Shape {
+  redonda
+  rectangular
 }

@@ -1,10 +1,19 @@
 import express from "express";
+import guestsRouter from "./routes/guests.routes.js";
+import guestGroupsRouter from "./routes/guest-groups.routes.js";
+import tablesRouter from "./routes/tables.routes.js";
 
 const app = express();
 
+app.use(express.json());
+
 app.get("/", (req, res) => {
-  res.send("hello world");
+  res.send("Wedding backend API");
 });
+
+app.use("/guests", guestsRouter);
+app.use("/groups", guestGroupsRouter);
+app.use("/tables", tablesRouter);
 
 const PORT = process.env.PORT || 3000;
 
